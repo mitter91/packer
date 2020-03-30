@@ -1,0 +1,18 @@
+- hosts: all
+    
+  vars:
+    student_first_name: "Artsemi"
+    student_last_name: "Yoursh"
+
+  roles:
+    - base
+    - role: msg-service
+      vars:
+        app_user: "msg-service"
+        app_group: "msg-service"
+        app_home: "/opt/msg-service"
+        app_msg_message: "<i class='far fa-thumbs-up'></i>Hail to the Ansible<p style='font-size: \
+          16pt'>Student: {{ student_first_name | lower | regex_replace('^a.*t(.*)$', 'a \\1') }} \
+          {{ student_last_name | regex_replace('^Y.*r(.*)$', '\\1') | upper }}</p>"
+        app_port: "8080"
+        app_msg_header: "<img width=250 src=https://www.md-webdesigner.com/objectif-libre/wp-content/uploads/2017/05/Ansible.png>"

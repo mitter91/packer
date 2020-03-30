@@ -1,0 +1,58 @@
+# tasks for msg-service
+- name: user for msg-service
+  include_role:
+    name: user
+  vars:
+    user_name: "{{ app_user | default('msg-service') }}"
+    user_group: "{{ app_group | default('msg-service') }}"
+  when: ansible_local.msg_service is undefined or not ansible_local.msg_service.USER_INIT
+
+- name: dir
+  become: yes
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: "{{ app_user | default('msg-service') }}"
+    group: "{{ app_group | default('msg-service') }}"
+    recurse: yes
+  loop:
+    - "{{ app_home }}/bin"
+    - "{{ app_home }}/conf"
+
+- name: download
+  become: yes
+  get_url:
+    url: https://playpit-labs-assets.s3-eu-west-1.amazonaws.com/msg-service/msg-server
+    dest: "{{ app_home | default('/opt/msg-service') }}/bin"
+    mode: 0755
+
+- name: copy templates
+  become: yes
+  template: src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }} group={{ item.group }} mode={{ item.mode }}
+  loop:
+    - { src: msg-service.config,
+        dest: "{{ app_home }}/conf/msg-service.conf",
+        owner: "{{ app_user | default('msg-service') }}",
+        group: "{{ app_group | default('msg-service') }}",
+        mode: "0644" }
+    - { src: msg-service.service,
+        dest: "{{ sysd }}/msg-service.service",
+        owner: root,
+        group: root,
+        mode: "0644" }
+  notify:
+    - service_start
+    - msg_service_fact
+
+- name: msg_service_port_fact
+  set_fact:
+     msg_service_port: "{{ app_port }}"
+
+- name: running
+  become: yes
+  systemd:
+    name: msg-service.service
+    state: started
+    enabled: yes
+  notify:
+    - service_start

@@ -1,0 +1,14 @@
+[Unit]
+Description=BFG
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile={{ app_home}}/conf/msg-service.conf
+ExecStart={{ app_home}}/bin/msg-server
+ExecStop=/bin/kill -s QUIT $MAINPID
+User=msg-service
+Group=msg-service
+
+[Install]
+WantedBy=multi-user.target

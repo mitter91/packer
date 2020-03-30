@@ -1,0 +1,20 @@
+- name: service_start
+  become: yes
+  systemd:
+    name: msg-service.service
+    daemon_reload: yes
+    state: restarted
+
+- name: msg_service_fact
+  become: yes
+  copy:
+    content: >
+      {
+       "PORT": "{{ app_port | default('8080') }}",
+       "HEADER": "{{ app_msg_header | default('<img width=250 src=https://www.md-webdesigner.com/objectif-libre/wp-content/uploads/2017/05/Ansible.png>') }}",
+       "MSG": "{{ app_msg_message }}",
+       "USER_INIT": true,
+       "SERVICEUSER": "{{ app_user }}",
+       "INSTALLATIONTIME": "{{ ansible_date_time.iso8601 }}"
+      }
+    dest: /etc/ansible/facts.d/msg_service.fact
